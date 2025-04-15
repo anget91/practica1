@@ -7,9 +7,10 @@ import "@babel/polyfill";
 import "vuetify/dist/vuetify.min.css";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth"; 
 import VueTextAreaAutoSize from "vue-textarea-autosize";
 
-Vue.use(VueTextAreaAutoSize)
+Vue.use(VueTextAreaAutoSize);
 const firebaseConfig = {
   apiKey: "AIzaSyCAWk4KYdTVf9ChWKYl6AOCxGNNmZcZWK4",
   authDomain: "calendario-vue-c67a4.firebaseapp.com",
@@ -22,7 +23,7 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 export const db = firebase.firestore();
-
+export const auth = firebase.auth();
 Vue.config.productionTip = false;
 
 new Vue({

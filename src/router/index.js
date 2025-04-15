@@ -1,31 +1,54 @@
-import HomeView from '@/views/HomeView.vue'
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import Vue from "vue";
+import VueRouter from "vue-router";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView
-  },
 
   {
-    path: '/calendario',
-    name: 'calendario',
+    path: "/singin",
+    name: "singin",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/Calendario.vue')
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/SingIn.vue"),
+    meta: { layout: "empty" }, 
   },
-
-]
+  {
+    path: "/register",
+    name: "register",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/Register.vue"),
+    meta: { layout: "empty" }, 
+  },
+  {
+    path: "/calendar",
+    name: "calendar",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/Calendario.vue"),
+  },
+  {
+    path: "/account",
+    name: "account",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/Account.vue"),
+  },
+];
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

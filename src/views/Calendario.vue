@@ -60,7 +60,7 @@
           @click:more="viewDay"
           @click:date="viewDay"
           @change="updateRange"
-        ></v-calendar>
+        />
 
         <v-menu
           v-model="selectedOpen"
@@ -68,46 +68,27 @@
           :activator="selectedElement"
           offset-x
         >
-          <v-card color="grey lighten-4" min-width="350px" flat>
-            <v-toolbar :color="selectedEvent.color" dark>
+          <v-card flat color="grey lighten-4" min-width="350px">
+            <v-toolbar flat :color="selectedEvent.color" dark>
               <v-btn icon @click.prevent="deleteEvent(selectedEvent)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
-              <v-toolbar-title v-html="selectedEvent.title"></v-toolbar-title>
+              <v-toolbar-title>{{ selectedEvent.name }}</v-toolbar-title>
+
               <v-spacer></v-spacer>
             </v-toolbar>
 
             <v-card-text>
-              <v-form v-if="currentlyEditing !== selectedEvent.id">
-                {{ selectedEvent.title }} - {{ selectedEvent.description }}
-              </v-form>
-
-              <v-form v-else>
-                <v-text-field
-                  type="text"
-                  v-model="selectedEvent.title"
-                  label="Title"
-                ></v-text-field>
-                <textarea-autosize
-                  type="text"
-                  v-model="selectedEvent.description"
-                  style="width: 100%"
-                  :min-height="100"
-                ></textarea-autosize>
+              <v-form>
+                {{ selectedEvent.description }}
               </v-form>
             </v-card-text>
             <v-card-actions>
               <v-btn text color="secondary" @click="selectedOpen = false">
                 Cancel
               </v-btn>
-              <v-btn
-                text
-                v-if="currentlyEditing !== selectedEvent.id"
-                @click.prevent="editEvent(selectedEvent.id)"
+              <v-btn text @click.prevent="editEvent(selectedEvent.id)"
                 >Edit</v-btn
-              >
-              <v-btn text v-else @click.prevent="updateEvent(selectedEvent)"
-                >Save</v-btn
               >
             </v-card-actions>
           </v-card>
@@ -115,34 +96,31 @@
       </v-sheet>
       <v-dialog v-model="dialog" max-width="500px">
         <v-card class="pa-4">
-          <v-card-title class="text-h6">Add Schedule</v-card-title>
+          <v-card-title class="text-h6">
+            {{ isEditing ? "Edit Event" : "Add Schedule" }}
+          </v-card-title>
           <v-form @submit.prevent="addEvent">
             <v-text-field
               color="accent"
-              v-model="title"
+              v-model="name"
               label="New event title"
               outlined
               dense
             ></v-text-field>
+            <v-switch v-model="allday" label="All day" inset />
 
             <v-text-field
               v-model="start"
               label="Start date"
-              type="datetime-local"
-              outlined
-              dense
-            ></v-text-field>
-            <v-text-field
-              v-model="end"
-              label="End date"
-              type="datetime-local"
+              :type="allday ? 'date' : 'datetime-local'"
               outlined
               dense
             ></v-text-field>
 
             <v-text-field
-              v-model="description"
-              label="Add description"
+              v-model="end"
+              label="End date"
+              :type="allday ? 'date' : 'datetime-local'"
               outlined
               dense
             ></v-text-field>
@@ -168,9 +146,9 @@
 
             <v-card-actions class="d-flex justify-end">
               <v-btn text @click="dialog = false">Cancel</v-btn>
-              <v-btn color="primary" type="submit" @click.stop="dialog = false"
-                >Save</v-btn
-              >
+              <v-btn color="primary" type="submit" @click.stop="dialog = false">
+                {{ isEditing ? "Update" : "Save" }}
+              </v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
@@ -179,25 +157,19 @@
   </v-row>
 </template>
 <script>
-import { db } from "../main";
+import {
+  fetchEvents,
+  createEvent,
+  modifyEvent,
+  removeEvent,
+} from "@/services/firebaseService";
+
 export default {
   data: () => ({
-    colors: [
-      "#e0f3f9", // Azul claro
-      "#dad3ff", // Lila
-      "#b6f3c8", // Verde
-      "#feeed9", // Naranja suave
-      "#dcdcdc", // Gris
-    ],
-    selectedColor: "#c5a8ff", // Default
+    colors: ["#e0f3f9", "#dad3ff", "#b6f3c8", "#feeed9", "#dcdcdc"],
+    selectedColor: "#c5a8ff",
     focus: "",
     type: "month",
-    typeToLabel: {
-      month: "Month",
-      week: "Week",
-      day: "Day",
-      "4day": "4 Days",
-    },
     selectedEvent: {},
     selectedElement: null,
     selectedOpen: false,
@@ -206,106 +178,116 @@ export default {
     description: null,
     dialog: false,
     start: null,
+    day: null,
     end: null,
-    title: null,
-    currentlyEditing: null,
+    name: null,
+    isEditing: false,
+    editEventId: null,
+    allday: false,
   }),
+
   mounted() {
     this.$refs.calendar.checkChange();
   },
+
   created() {
-    this.getEvents();
+    this.loadEvents();
+  },
+  watch: {
+    dialog(value) {
+      if (!value) {
+        this.resetForm();
+      }
+    },
   },
   methods: {
-    selectColor(c) {
-      this.selectedColor = c;
-      this.color = c; // Actualiza el color del evento al seleccionar uno
+    async loadEvents() {
+      const data = await fetchEvents();
+      this.events = data;
     },
-    // async addEvent() {
-    //   try {
-    //     if (this.title && this.start && this.end) {
-    //       const response = await db.collection("events").add({
-    //         title: this.title,
-    //         description: this.description,
-    //         start: this.start,
-    //         end: this.end,
-    //         color: this.color,
-    //       });
-    //       console.log("respuesta: ", response);
-    //       this.getEvents();
-    //       this.title = null;
-    //       this.description = null;
-    //       this.start = null;
-    //       this.end = null;
-    //     }
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
-    // async getEvents() {
-    //   try {
-    //     const snapshot = await db.collection("events").get();
-    //     const events = [];
-    //     snapshot.forEach((doc) => {
-    //       let eventoData = doc.data();
-    //       eventoData.id = doc.id;
-    //       events.push(eventoData);
-    //       console.log(doc.data());
-    //     });
-    //     this.events = events;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
-    // async updateEvent(ev) {
-    //   try {
-    //     await db.collection("events").doc(ev.id).update({
-    //       title: ev.title,
-    //       description: ev.description,
-    //     });
 
-    //     this.selectedOpen = false;
-    //     this.currentlyEditing = null;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
-    // async deleteEvent(ev) {
-    //   console.log("event:", ev);
+    async addEvent() {
+      const newEvent = {
+        name: this.name,
+        start: this.start,
+        end: this.end,
+        description: this.description,
+        color: this.selectedColor,
+      };
 
-    //   try {
-    //     if (!ev.id) {
-    //       console.error("No ID found for the event");
-    //       return;
-    //     }
-    //     await db.collection("events").doc(ev.id).delete();
-    //     this.selectedOpen = false;
-    //     this.getEvents();
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
+      try {
+        if (this.isEditing) {
+          await modifyEvent(this.editEventId, newEvent);
+          this.loadEvents();
+        } else {
+          const ref = await createEvent(newEvent);
+          this.events.push({ ...newEvent, id: ref.id });
+        }
+      } catch (error) {
+        console.error("Error al guardar el evento:", error);
+      }
+
+      this.resetForm();
+      this.dialog = false;
+    },
+
+    async deleteEvent(event) {
+      try {
+        await removeEvent(event.id);
+        this.events = this.events.filter((e) => e.id !== event.id);
+        this.selectedOpen = false;
+      } catch (error) {
+        console.error("No se pudo eliminar el evento:", error);
+      }
+    },
 
     editEvent(id) {
-      this.currentlyEditing = id;
+      const event = this.events.find((e) => e.id === id);
+      if (event) {
+        this.name = event.name;
+        this.description = event.description;
+        this.start = event.allday ? event.start : event.start.slice(0, 16); // Si es todo el día, solo la fecha
+        this.end = event.allday ? event.end : event.end.slice(0, 16); // Lo mismo con el end
+        this.selectedColor = event.color;
+        this.allday = event.allday; // Si es todo el día, activa el switch
+        this.isEditing = true;
+        this.editEventId = id;
+        this.dialog = true;
+      }
+      this.selectedOpen = false;
+    },
+
+    resetForm() {
+      this.name = null;
+      this.description = null;
+      this.start = null;
+      this.end = null;
+      this.selectedColor = "#c5a8ff";
+      this.isEditing = false;
+      this.editEventId = null;
     },
 
     viewDay({ date }) {
       this.focus = date;
       this.type = "day";
     },
+
     getEventColor(event) {
       return event.color;
     },
+
     setToday() {
       this.focus = "";
     },
+
     prev() {
       this.$refs.calendar.prev();
     },
+
     next() {
       this.$refs.calendar.next();
     },
+
     showEvent({ nativeEvent, event }) {
       const open = () => {
         this.selectedEvent = event;
@@ -324,13 +306,19 @@ export default {
 
       nativeEvent.stopPropagation();
     },
+
     updateRange({ start, end }) {
-      // Aquí puedes cargar eventos reales desde una API o tu backend si lo deseas
-      // this.events = []; quitar linea
+      // puedes usar estos datos si quieres cargar por rango
+    },
+
+    selectColor(c) {
+      this.selectedColor = c;
+      this.color = c;
     },
   },
 };
 </script>
+
 <style scoped>
 .btn {
   border-radius: 6px;
