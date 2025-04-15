@@ -1,54 +1,60 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import { auth } from '@/main'; // Importa Firebase Auth
 
 Vue.use(VueRouter);
 
 const routes = [
-
   {
-    path: "/singin",
-    name: "singin",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    path: '/singin',
+    name: 'singin',
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/SingIn.vue"),
-    meta: { layout: "empty" }, 
+      import(/* webpackChunkName: "singin" */ '../views/SingIn.vue'),
+    meta: { layout: 'empty' },
   },
   {
-    path: "/register",
-    name: "register",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    path: '/register',
+    name: 'register',
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Register.vue"),
-    meta: { layout: "empty" }, 
+      import(/* webpackChunkName: "register" */ '../views/Register.vue'),
+    meta: { layout: 'empty' },
   },
   {
-    path: "/calendar",
-    name: "calendar",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    path: '/calendar',
+    name: 'calendar',
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Calendario.vue"),
+      import(/* webpackChunkName: "calendar" */ '../views/Calendario.vue'),
+    meta: { requiresAuth: true },
   },
   {
-    path: "/account",
-    name: "account",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    path: '/account',
+    name: 'account',
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Account.vue"),
+      import(/* webpackChunkName: "account" */ '../views/Account.vue'),
+    meta: { requiresAuth: true },
   },
 ];
 
 const router = new VueRouter({
-  mode: "history",
+  mode: 'history',
   base: process.env.BASE_URL,
   routes,
+});
+
+// Guard global para la autenticación
+router.beforeEach((to, from, next) => {
+  // Verifica si la ruta requiere autenticación
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    const user = JSON.parse(localStorage.getItem('user')); // Obtén el usuario de localStorage
+
+    if (user) {
+      next(); // Si está autenticado, pasa
+    } else {
+      next({ name: 'singin' }); // Si no está autenticado, redirige al login
+    }
+  } else {
+    next(); // Si la ruta no requiere autenticación, pasa
+  }
 });
 
 export default router;

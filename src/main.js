@@ -7,7 +7,7 @@ import "@babel/polyfill";
 import "vuetify/dist/vuetify.min.css";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import "firebase/auth"; 
+import "firebase/auth";
 import VueTextAreaAutoSize from "vue-textarea-autosize";
 
 Vue.use(VueTextAreaAutoSize);
@@ -24,6 +24,16 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 export const db = firebase.firestore();
 export const auth = firebase.auth();
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    // Guarda el UID del usuario en localStorage
+    localStorage.setItem("user", JSON.stringify(user));
+  } else {
+    // Si no hay usuario, elimina el dato de localStorage
+    localStorage.removeItem("user");
+  }
+});
 Vue.config.productionTip = false;
 
 new Vue({
