@@ -23,15 +23,15 @@ const routes = [
     path: '/calendar',
     name: 'calendar',
     component: () =>
-      import(/* webpackChunkName: "calendar" */ '../views/Calendario.vue'),
-    meta: { requiresAuth: true },
+      import(/* webpackChunkName: "calendar" */ '../views/Calendar.vue'),
+    // meta: { requiresAuth: true },
   },
   {
     path: '/account',
     name: 'account',
     component: () =>
       import(/* webpackChunkName: "account" */ '../views/Account.vue'),
-    meta: { requiresAuth: true },
+    // meta: { requiresAuth: true },
   },
 ];
 

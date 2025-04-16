@@ -7,13 +7,7 @@
             {{ $refs.calendar.title }}
           </v-toolbar-title>
 
-          <v-btn
-            outlined
-            small
-            class="mx-4 red--text"
-            color="grey lighten-1 "
-            @click="setToday"
-          >
+          <v-btn outlined small class="mx-4 red--text" color="grey lighten-1 " @click="setToday">
             Today
           </v-btn>
 
@@ -29,45 +23,20 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
           <v-divider class="mx-4" inset vertical></v-divider>
-          <div
-            class="d-flex justify-end align-center pa-1 grey lighten-4"
-            style="gap: 8px; border-radius: 6px"
-          >
-            <v-btn
-              v-for="view in ['day', 'week', 'month']"
-              :key="view"
-              depressed
-              small
-              class="btn-view"
-              :class="{ 'active-btn': type === view }"
-              @click="type = view"
-            >
+          <div class="d-flex justify-end align-center pa-1 grey lighten-4" style="gap: 8px; border-radius: 6px">
+            <v-btn v-for="view in ['day', 'week', 'month']" :key="view" depressed small class="btn-view"
+              :class="{ 'active-btn': type === view }" @click="type = view">
               {{ view.charAt(0).toUpperCase() + view.slice(1) }}
             </v-btn>
           </div>
         </v-toolbar>
       </v-sheet>
       <v-sheet height="600">
-        <v-calendar
-          ref="calendar"
-          locale="en"
-          v-model="focus"
-          color="primary"
-          :events="events"
-          :event-color="getEventColor"
-          :type="type"
-          @click:event="showEvent"
-          @click:more="viewDay"
-          @click:date="viewDay"
-          @change="updateRange"
-        />
+        <v-calendar ref="calendar" locale="en" v-model="focus" color="primary" :events="events"
+          :event-color="getEventColor" :type="type" @click:event="showEvent" @click:more="viewDay" @click:date="viewDay"
+          @change="updateRange" />
 
-        <v-menu
-          v-model="selectedOpen"
-          :close-on-content-click="false"
-          :activator="selectedElement"
-          offset-x
-        >
+        <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
           <v-card flat color="grey lighten-4" min-width="350px">
             <v-toolbar flat :color="selectedEvent.color" dark>
               <v-btn icon @click.prevent="deleteEvent(selectedEvent)">
@@ -87,9 +56,7 @@
               <v-btn text color="secondary" @click="selectedOpen = false">
                 Cancel
               </v-btn>
-              <v-btn text @click.prevent="editEvent(selectedEvent.id)"
-                >Edit</v-btn
-              >
+              <v-btn text @click.prevent="editEvent(selectedEvent.id)">Edit</v-btn>
             </v-card-actions>
           </v-card>
         </v-menu>
@@ -99,60 +66,43 @@
           <v-card-title class="text-h6">
             {{ isEditing ? "Edit Event" : "Add Schedule" }}
           </v-card-title>
+
           <v-form @submit.prevent="addEvent">
-            <v-text-field
-              color="accent"
-              v-model="name"
-              label="New event title"
-              outlined
-              dense
-            ></v-text-field>
+            <v-text-field outlined dense color="primary" v-model="name" label="Event title"></v-text-field>
             <v-switch v-model="allday" label="All day" inset />
 
-            <v-text-field
-              v-model="start"
-              label="Start date"
-              :type="allday ? 'date' : 'datetime-local'"
-              outlined
-              dense
-            ></v-text-field>
+            <v-text-field outlined dense color="primary" v-model="start" label="Start date"
+              :type="allday ? 'date' : 'datetime-local'" :min="minDate"></v-text-field>
 
-            <v-text-field
-              v-model="end"
-              label="End date"
-              :type="allday ? 'date' : 'datetime-local'"
-              outlined
-              dense
-            ></v-text-field>
+            <v-text-field outlined dense color="primary" v-model="end" label="End date"
+              :type="allday ? 'date' : 'datetime-local'" :min="start || minDate"></v-text-field>
+
+            <v-text-field outlined dense color="primary" v-model="description" label="Event description"></v-text-field>
 
             <div class="d-flex mt-4" style="gap: 2px">
-              <div
-                v-for="(c, index) in colors"
-                :key="index"
-                :style="{
-                  backgroundColor: c,
-                  border:
-                    c === selectedColor
-                      ? '2px solid #7b8085'
-                      : '1px solid #ccc',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                }"
-                @click="selectColor(c)"
-              ></div>
+              <div v-for="(c, index) in colors" :key="index" :style="{
+                backgroundColor: c,
+                border:
+                  c === selectedColor
+                    ? '2px solid #7b8085'
+                    : '1px solid #ccc',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+              }" @click="selectColor(c)"></div>
             </div>
 
             <v-card-actions class="d-flex justify-end">
               <v-btn text @click="dialog = false">Cancel</v-btn>
-              <v-btn color="primary" type="submit" @click.stop="dialog = false">
+              <v-btn color="primary" type="submit">
                 {{ isEditing ? "Update" : "Save" }}
               </v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
       </v-dialog>
+
     </v-col>
   </v-row>
 </template>
@@ -166,8 +116,20 @@ import {
 
 export default {
   data: () => ({
-    colors: ["#e0f3f9", "#dad3ff", "#b6f3c8", "#feeed9", "#dcdcdc"],
-    selectedColor: "#c5a8ff",
+    colors: [
+      // "#FAD02E",
+      // "#F28D35",
+      // "#D83367",
+      // "#4C9E9F",
+      // "#A1D0B6",
+      "#D1A6F5",
+      "#FFACAC",
+      "#C3E0E5",
+      "#F0C6A4",
+      "#B6D0B6",
+    ],
+    selectedColor: "#D1A6F5", // Color por defecto
+
     focus: "",
     type: "month",
     selectedEvent: {},
@@ -195,11 +157,58 @@ export default {
   },
   watch: {
     dialog(value) {
-      if (!value) {
+      if (value) {
+        const now = new Date();
+        const offset = now.getTimezoneOffset();
+        now.setMinutes(now.getMinutes() - offset);
+
+        if (!this.isEditing) {
+          const iso = now.toISOString();
+          this.start = this.allday ? iso.split("T")[0] : iso.slice(0, 16);
+          this.end = this.start; // Mismo valor por defecto
+        }
+      } else {
         this.resetForm();
+
+      }
+    },
+    start(newVal) {
+      if (newVal && this.end && new Date(newVal) > new Date(this.end)) {
+        this.end = newVal;
+      }
+    },
+    allday(newVal) {
+      if (newVal) {
+        // Si activa "all day", quitamos la hora
+        this.start = this.start?.split("T")[0];
+        this.end = this.end?.split("T")[0];
+      } else {
+        // Si desactiva, agregamos hora por defecto si no la tiene
+        const now = new Date();
+        const defaultTime = now.toTimeString().slice(0, 5); // hh:mm
+
+        if (this.start && this.start.length === 10) {
+          this.start = `${this.start}T${defaultTime}`;
+        }
+
+        if (this.end && this.end.length === 10) {
+          this.end = `${this.end}T${defaultTime}`;
+        }
       }
     },
   },
+
+  computed: {
+    minDate() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      now.setMinutes(now.getMinutes() - offset); // para formato local ISO
+      return this.allday
+        ? now.toISOString().split("T")[0]
+        : now.toISOString().slice(0, 16);
+    },
+  },
+
   methods: {
     async loadEvents() {
       const data = await fetchEvents();
@@ -207,12 +216,42 @@ export default {
     },
 
     async addEvent() {
+      const now = new Date();
+      let startDate = new Date(this.start);
+      let endDate = new Date(this.end);
+
+      // Si es un evento de "Todo el día", ajustamos las horas a las 00:00
+      if (this.allday) {
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+      }
+
+      // Verificamos si la fecha de inicio es menor que la fecha actual
+      if (startDate < now && !this.allday) {
+        this.$toasted.error("Start date must be today or in the future.", { icon: 'error' });
+        return;
+      }
+
+      // Verificamos si la fecha de fin es menor que la fecha de inicio
+      if (endDate < startDate) {
+        this.$toasted.error("End date cannot be earlier than start date.", { icon: 'error' });
+        return;
+      }
+
+      let eventName = this.name?.trim();
+      if (!eventName) {
+        eventName = "(Untitled)";
+        this.$toasted.info("The event has no title. It will be saved as (Untitled)", { icon: 'info' });
+      }
+
       const newEvent = {
-        name: this.name,
+        name: eventName,
         start: this.start,
         end: this.end,
         description: this.description,
         color: this.selectedColor,
+        allday: this.allday,
       };
 
       try {
@@ -223,12 +262,14 @@ export default {
           const ref = await createEvent(newEvent);
           this.events.push({ ...newEvent, id: ref.id });
         }
+        this.resetForm();
+        this.dialog = false;
+        this.$toasted.success("Event successfully saved", { icon: 'check' });
+
       } catch (error) {
+        this.$toasted.error("An error occurred while saving the event.", { icon: 'error' });
         console.error("Error al guardar el evento:", error);
       }
-
-      this.resetForm();
-      this.dialog = false;
     },
 
     async deleteEvent(event) {
@@ -236,6 +277,7 @@ export default {
         await removeEvent(event.id);
         this.events = this.events.filter((e) => e.id !== event.id);
         this.selectedOpen = false;
+        this.$toasted.success("Event successfully deleted", { icon: 'check' });
       } catch (error) {
         console.error("No se pudo eliminar el evento:", error);
       }
@@ -262,7 +304,7 @@ export default {
       this.description = null;
       this.start = null;
       this.end = null;
-      this.selectedColor = "#c5a8ff";
+      this.selectedColor = "#D1A6F5";
       this.isEditing = false;
       this.editEventId = null;
     },
@@ -324,6 +366,7 @@ export default {
   border-radius: 6px;
   transition: background-color 0.2s ease;
 }
+
 .v-btn.btn-view {
   color: #000;
   background-color: transparent;

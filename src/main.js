@@ -9,6 +9,8 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import VueTextAreaAutoSize from "vue-textarea-autosize";
+import Toasted from 'vue-toasted'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 Vue.use(VueTextAreaAutoSize);
 const firebaseConfig = {
@@ -27,18 +29,40 @@ export const auth = firebase.auth();
 
 auth.onAuthStateChanged((user) => {
   if (user) {
-    // Guarda el UID del usuario en localStorage
-    localStorage.setItem("user", JSON.stringify(user));
+    // Guarda el UID y nombre del usuario en localStorage
+    db.collection("users")
+      .doc(user.uid)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          const userName = doc.data().name;
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ uid: user.uid, name: userName })
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error al obtener el nombre del usuario:", error.message);
+      });
   } else {
     // Si no hay usuario, elimina el dato de localStorage
     localStorage.removeItem("user");
   }
 });
-Vue.config.productionTip = false;
 
+Vue.config.productionTip = false;
+Vue.use(Toasted, {
+  theme: 'bubble',
+  position: 'bottom-right',
+  duration: 2000,
+})
 new Vue({
   router,
   store,
   vuetify,
+  icons: {
+    iconfont: 'md', // 'md' = Material Design Icons (iconfont)
+  },
   render: (h) => h(App),
 }).$mount("#app");

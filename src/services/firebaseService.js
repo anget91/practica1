@@ -1,24 +1,53 @@
-// src/services/firebaseService.js
-import { db } from "@/main";
+import { auth, db } from "@/main";
 
 // Obtener todos los eventos
+
+// Obtener eventos del usuario actual
 export const fetchEvents = async () => {
   try {
-    const snapshot = await db.collection("events").get();
+    const authUser = auth.currentUser;
+    let userId = authUser ? authUser.uid : null;
+
+    // Backup: si auth no está listo, usamos localStorage
+    if (!userId) {
+      const localUser = JSON.parse(localStorage.getItem("user"));
+      if (localUser && localUser.uid) {
+        userId = localUser.uid;
+      } else {
+        throw new Error("Usuario no autenticado");
+      }
+    }
+
+    const snapshot = await db.collection("events").where("userId", "==", userId).get();
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     }));
   } catch (error) {
     console.error("Error al obtener los eventos:", error);
-    return []; // Devuelve un array vacío si falla
+    return [];
   }
 };
 
-// Agregar un nuevo evento
+// Crear evento para el usuario actual
 export const createEvent = async (event) => {
   try {
-    const docRef = await db.collection("events").add(event);
+    const authUser = auth.currentUser;
+    let userId = authUser ? authUser.uid : null;
+
+    if (!userId) {
+      const localUser = JSON.parse(localStorage.getItem("user"));
+      if (localUser && localUser.uid) {
+        userId = localUser.uid;
+      } else {
+        throw new Error("Usuario no autenticado");
+      }
+    }
+
+    const docRef = await db.collection("events").add({
+      ...event,
+      userId,
+    });
     return docRef;
   } catch (error) {
     console.error("Error al agregar el evento:", error);
