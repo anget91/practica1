@@ -83,8 +83,7 @@ export default {
       drawer: true,
       mini: true,
       items: [
-        { title: "Home", icon: "mdi-home", route: "/" },
-        { title: "Calendar", icon: "mdi-calendar-blank", route: "/calendar" },
+        { title: "Calendar", icon: "mdi-calendar-blank", route: "/" },
         { title: "Tasks", icon: "mdi-format-list-bulleted", route: "/tasks" },
         { title: "My Account", icon: "mdi-account", route: "/account" },
       ],

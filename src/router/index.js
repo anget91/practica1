@@ -20,18 +20,25 @@ const routes = [
     meta: { layout: 'empty' },
   },
   {
-    path: '/calendar',
-    name: 'calendar',
+    path: '/',
+    name: '',
     component: () =>
       import(/* webpackChunkName: "calendar" */ '../views/Calendar.vue'),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
   },
   {
     path: '/account',
     name: 'account',
     component: () =>
       import(/* webpackChunkName: "account" */ '../views/Account.vue'),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/tasks',
+    name: 'tasks',
+    component: () =>
+      import(/* webpackChunkName: "account" */ '../views/Tasks.vue'),
+    meta: { requiresAuth: true },
   },
 ];
 

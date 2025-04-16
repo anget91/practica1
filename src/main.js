@@ -11,6 +11,8 @@ import "firebase/auth";
 import VueTextAreaAutoSize from "vue-textarea-autosize";
 import Toasted from 'vue-toasted'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
+import draggable from 'vuedraggable'
+
 
 Vue.use(VueTextAreaAutoSize);
 const firebaseConfig = {
@@ -61,6 +63,7 @@ new Vue({
   router,
   store,
   vuetify,
+
   icons: {
     iconfont: 'md', // 'md' = Material Design Icons (iconfont)
   },
